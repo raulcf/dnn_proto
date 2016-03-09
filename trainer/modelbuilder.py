@@ -4,9 +4,13 @@ from keras.optimizers import SGD
 
 def build_sequential_model():
     model = Sequential() 
-    model.add(Dense(output_dim=64, input_dim=100, init="glorot_uniform"))
+    model.add(Dense(output_dim=64, input_dim=30, init="glorot_uniform"))
     model.add(Activation("relu"))
-    model.add(Dense(output_dim=10, init="glorot_uniform"))
+    model.add(Dense(output_dim=64, input_dim=30, init="glorot_uniform"))
+    model.add(Activation("relu"))
+    model.add(Dense(output_dim=64, input_dim=30, init="glorot_uniform"))
+    model.add(Activation("relu"))
+    model.add(Dense(output_dim=1, init="glorot_uniform"))
     model.add(Activation("softmax"))
 
     model.compile(loss='categorical_crossentropy',
@@ -16,11 +20,11 @@ def build_sequential_model():
     return model
 
 def fit_model_batch(model, x, y):
-    model.fit(x, y, nb_epoch=5, batch_size=1)
+    model.fit(x, y, nb_epoch=500, batch_size=1)
     return model
 
 def predict_with_model(x, model):
-    c = model.predict_class(x)
+    c = model.predict_classes(x)
     return c
 
 if __name__ == "__main__":

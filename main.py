@@ -83,7 +83,8 @@ def read_fasta_test():
 
 if __name__ == "__main__":
     #main()
-    seqs = IO.read_fasta_file("small_peptides.fasta")
+    #seqs = IO.read_fasta_file("small_peptides.fasta")
+    seqs = IO.read_fasta_file("ls_orchid.fasta")
     print(str(len(seqs)))
     #for s in seqs:
     #    print(str(s))
@@ -100,14 +101,10 @@ if __name__ == "__main__":
     M = trainer.build_sequential_model()
     x_b = [x for x in nvecs]
     x_batch = np.array(x_b)
-    print(str(x_batch.shape))
-    for x in x_batch:
-        print(str(x))
     y_batch = [x%2 for x in range(1, len(x_batch)+1)]
-    for y in y_batch:
-        print(str(y))
+    print("About to start training process with x.size: " + str(x_batch.shape))
     trained_M = trainer.fit_model_batch(M, x_batch, y_batch)
-    classes = trainer.predict_with_model(x_batch, model)
+    classes = trainer.predict_with_model(x_batch, M)
     for c in classes:
         print(str(c))
     
