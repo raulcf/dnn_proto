@@ -1,15 +1,9 @@
 - retrieve libraries that generate more descriptors
 
-- write a serializer/deserializer for numerical vectors of descriptors, as
-  computing these is very expensive
-
 - Learn about how to configure/tune keras model- retrieve libraries that
   generate more descriptors
-
-- write a serializer/deserializer for numerical vectors of descriptors, as
-  computing these is very expensive
 
 - Learn about how to configure/tune keras modelss
 
 - write a software to generate all permutations given K cachanges to an
-  aminoacid sequence. (for generating the peptides later)
+  aminoacid sequence. (for generating the peptides later) (maybe detect motifs, and modify the rest?)
