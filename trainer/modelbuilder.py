@@ -2,6 +2,7 @@ from keras.models import Sequential
 from keras.layers.core import Dense, Activation
 from keras.optimizers import SGD
 
+
 def build_sequential_model():
     model = Sequential() 
     model.add(Dense(output_dim=64, input_dim=30, init="glorot_uniform"))
@@ -19,9 +20,11 @@ def build_sequential_model():
                                       nesterov=True))
     return model
 
+
 def fit_model_batch(model, x, y):
     model.fit(x, y, nb_epoch=500, batch_size=1)
     return model
+
 
 def predict_with_model(x, model):
     c = model.predict_classes(x)
