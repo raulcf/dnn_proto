@@ -15,8 +15,11 @@ def read_fasta_file(filename):
     return seqs
 
 
-def serialize_descriptor_vector(dvec):
-    path = C.serde_model_path + C.model_name + ".pickle"
+def serialize_descriptor_vector(dvec, o_file=None):
+    if o_file is None:
+        path = C.serde_model_path + C.model_name + ".pickle"
+    else:
+        path = C.serde_model_path + o_file + ".pickle"
     output = open(path, 'wb')
     pickle.dump(dvec, output)
     output.close()
@@ -28,6 +31,12 @@ def deserialize_descriptor_vector():
     dvec = pickle.load(input)
     return dvec
 
+
+def serialize_model(model, o_file=None):
+    if o_file is None:
+        model.save(C.model_path)
+    else:
+        model.save(o_file)
     
 if __name__ == "__main__":
     filename = "ls_orchid.fasta"
