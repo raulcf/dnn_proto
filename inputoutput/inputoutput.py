@@ -25,8 +25,8 @@ def serialize_descriptor_vector(dvec, o_file=None):
     output.close()
 
 
-def deserialize_descriptor_vector():
-    path = C.serde_model_path + C.model_name + ".pickle"
+def deserialize_descriptor_vector(model_name):
+    path = C.serde_model_path + model_name + ".pickle"
     input = open(path, 'rb')
     dvec = pickle.load(input)
     return dvec

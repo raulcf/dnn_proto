@@ -4,6 +4,7 @@
 
 import time
 import numpy as np
+import random
 
 from inputoutput import inputoutput as IO
 from featurex import featurex as FX
@@ -12,8 +13,67 @@ from trainer import modelbuilder as trainer
 
 def main():
 
-    extract_descriptors_from_fasta_to_file("neg_peptides.fasta", "neg_p")
+    """
+    extract_descriptors_from_fasta_to_file("neg_peptides_sample.fasta", "neg_p")
     extract_descriptors_from_fasta_to_file("pos_peptides.fasta", "pos_p")
+    """
+
+    print("Deserializing descriptor vectors...")
+    neg_dvec = IO.deserialize_descriptor_vector("neg_p")
+    pos_dvec = IO.deserialize_descriptor_vector("pos_p")
+    print("Deserializing descriptor vectors...OK")
+    print("")
+
+    print("Extracting numerical vectors...")
+    # FIXME: need to get these for each peptide (vector per peptide)
+    neg_nvec = FX.num_vector_from_descriptor_vector(neg_dvec[0])
+    pos_nvec = FX.num_vector_from_descriptor_vector(pos_dvec[0])
+    print("Extracting numerical vectors...OK")
+    print("")
+
+    M = trainer.build_sequential_model()
+
+    print("Preparing training and label data...")
+    # Prepare training data and labels
+    #neg_training_batch = np.array(neg_nvec)
+    neg_y_batch = [0 for x in neg_nvec]
+    #pos_training_batch = np.array(pos_nvec)
+    pos_y_batch = [1 for x in pos_nvec]
+
+    print(str(neg_nvec))
+
+    # Append training data and labels, and create shuffle idx
+    #x_batch_appended = np.concatenate(neg_training_batch, pos_training_batch)
+    neg_nvec.extend(pos_nvec)
+    x_batch_appended = neg_nvec
+    #y_batch_appended = np.concatenate(neg_y_batch, pos_y_batch)
+    neg_y_batch.extend(pos_y_batch)
+    y_batch_appended = neg_y_batch
+    x_batch_appended = np.array(x_batch_appended)
+    v_size = len(y_batch_appended)
+    y_batch_appended = np.array(y_batch_appended)
+    shuffle_idx_array = random.sample(range(0, (v_size - 1)), v_size)
+
+    # Finally shuffle to get the real x and y training and labels
+    x_batch = x_batch_appended[shuffle_idx_array]
+    y_batch = y_batch_appended[shuffle_idx_array]
+    print("Preparing training and label data...OK")
+    print("")
+
+    print("Training model on data...")
+    s_training = time.time()
+    trained_M = trainer.fit_model_batch(M, x_batch, y_batch)
+    e_training = time.time()
+    print("Training model on data...OK, took: " + str((e_training - s_training)))
+
+    print("Classifying data...")
+    s_classify = time.time()
+    classes = trainer.predict_with_model(x_batch, trained_M)
+    e_classify = time.time()
+    print("Classifying data...OK, took: " + str((e_classify - s_classify)))
+
+    for c in classes:
+        print(str(c))
 
     """
     s_read_seq = time.time()
