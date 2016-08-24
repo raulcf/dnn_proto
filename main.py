@@ -4,14 +4,14 @@
 
 import time
 import numpy as np
-import random
+from random import shuffle
 
 from inputoutput import inputoutput as IO
 from featurex import featurex as FX
 from trainer import modelbuilder as trainer
 
 
-def main():
+def main(model=None):
 
     """
     extract_descriptors_from_fasta_to_file("neg_peptides_sample.fasta", "neg_p")
@@ -25,34 +25,45 @@ def main():
     print("")
 
     print("Extracting numerical vectors...")
-    # FIXME: need to get these for each peptide (vector per peptide)
-    neg_nvec = FX.num_vector_from_descriptor_vector(neg_dvec[0])
-    pos_nvec = FX.num_vector_from_descriptor_vector(pos_dvec[0])
+
+    neg_nmat = []
+    for dvec in neg_dvec:
+        if dvec is None:
+            continue
+        neg_nvec = FX.num_vector_from_descriptor_vector(dvec)
+        neg_nmat.append(neg_nvec)
+
+    pos_nmat = []
+    for dvec in pos_dvec:
+        if dvec is None:
+            continue
+        pos_nvec = FX.num_vector_from_descriptor_vector(dvec)
+        pos_nmat.append(pos_nvec)
+
     print("Extracting numerical vectors...OK")
     print("")
 
-    M = trainer.build_sequential_model()
-
     print("Preparing training and label data...")
-    # Prepare training data and labels
-    #neg_training_batch = np.array(neg_nvec)
-    neg_y_batch = [0 for x in neg_nvec]
-    #pos_training_batch = np.array(pos_nvec)
-    pos_y_batch = [1 for x in pos_nvec]
 
-    print(str(neg_nvec))
+    # Prepare labels
+    neg_y_batch = [0 for _ in neg_nmat]
+    pos_y_batch = [1 for _ in pos_nmat]
 
     # Append training data and labels, and create shuffle idx
-    #x_batch_appended = np.concatenate(neg_training_batch, pos_training_batch)
-    neg_nvec.extend(pos_nvec)
-    x_batch_appended = neg_nvec
-    #y_batch_appended = np.concatenate(neg_y_batch, pos_y_batch)
+    neg_nmat.extend(pos_nmat)
+    x_batch_appended = neg_nmat
     neg_y_batch.extend(pos_y_batch)
     y_batch_appended = neg_y_batch
+
     x_batch_appended = np.array(x_batch_appended)
     v_size = len(y_batch_appended)
+
     y_batch_appended = np.array(y_batch_appended)
-    shuffle_idx_array = random.sample(range(0, (v_size - 1)), v_size)
+
+    print("Creating shuffle idx array, size: " + str(v_size))
+
+    shuffle_idx_array = range(0, v_size, 1)
+    shuffle(shuffle_idx_array)
 
     # Finally shuffle to get the real x and y training and labels
     x_batch = x_batch_appended[shuffle_idx_array]
@@ -60,11 +71,18 @@ def main():
     print("Preparing training and label data...OK")
     print("")
 
-    print("Training model on data...")
-    s_training = time.time()
-    trained_M = trainer.fit_model_batch(M, x_batch, y_batch)
-    e_training = time.time()
-    print("Training model on data...OK, took: " + str((e_training - s_training)))
+    if model is None:
+        print("Training model on data...")
+        s_training = time.time()
+        M = trainer.build_sequential_model()
+        trained_M = trainer.fit_model_batch(M, x_batch, y_batch, num_epoch=100)
+        e_training = time.time()
+        print("Training model on data...OK, took: " + str((e_training - s_training)))
+
+        # Store expensive-to-train model
+        IO.serialize_model(trained_M, "models/basic_sequential")
+    else:
+        trained_M = model
 
     print("Classifying data...")
     s_classify = time.time()
@@ -72,8 +90,16 @@ def main():
     e_classify = time.time()
     print("Classifying data...OK, took: " + str((e_classify - s_classify)))
 
-    for c in classes:
-        print(str(c))
+    total_samples = 0
+    hits = 0
+    for i in range(len(classes)):
+        total_samples = total_samples + 1
+        #print("Ground truth: " + str(y_batch[i]))
+        #print("Prediction: " + str(classes[i]))
+        if y_batch[i] == classes[i]:
+            hits = hits + 1
+
+    print("Hits/Total: " + str(hits) + "/" + str(total_samples))
 
     """
     s_read_seq = time.time()
@@ -157,5 +183,9 @@ def extract_descriptors_from_fasta_to_file(fastafile, outputfile):
 
 
 if __name__ == "__main__":
-    main()
+
+    #model = IO.deserialize_model("models/basic_sequential")
+    model = None
+
+    main(model)
 

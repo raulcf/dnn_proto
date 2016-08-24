@@ -2,6 +2,7 @@ import pickle
 import config as C
 
 from Bio import SeqIO
+from keras.models import load_model
 
 
 def read_fasta_file(filename):
@@ -37,7 +38,16 @@ def serialize_model(model, o_file=None):
         model.save(C.model_path)
     else:
         model.save(o_file)
-    
+
+
+def deserialize_model(o_file=None):
+    if o_file is None:
+        model = load_model(C.model_path)
+    else:
+        model = load_model(o_file)
+    return model
+
+
 if __name__ == "__main__":
     filename = "ls_orchid.fasta"
     seqs = read_fasta_file(filename)
